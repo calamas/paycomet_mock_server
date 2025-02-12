@@ -1,88 +1,173 @@
 const express = require("express");
-const multer = require("multer");
 const cors = require("cors");
 const path = require("path");
+const faker = require("faker");
 
 const app = express();
-const PORT = process.env.PORT || 443;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
-// Mock API Response
-app.get("/api/hello", (req, res) => {
-    res.json({
-        message: "Hello from the mock server!"
-    });
-});
-
-// Set up file upload using Multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, "uploads/"),
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
-});
-
-const upload = multer({
-    storage
-});
-
-app.post("/api/upload", upload.single("file"), (req, res) => {
-    if (!req.file) return res.status(400).json({
-        error: "No file uploaded"
-    });
-    res.json({
-        message: "File uploaded successfully!",
-        filename: req.file.filename
-    });
-});
-
-// Default route
+// Payments
 app.post("/payments", (req, res) => {
-    const {
-        payment: {
-            amount,
-            currency,
-            methodId,
-            order,
-            originalIp,
-            secure,
-            termina,
-            idUser,
-            tokenUser,
-            productDescription
-        }
-    } = req.body;
+  const {
+    payment: {
+      amount,
+      currency,
+      methodId,
+      order,
+      originalIp,
+      secure,
+      terminal,
+      idUser,
+      tokenUser,
+      productDescription,
+    },
+  } = req.body;
 
+  if (amount > 10000) {
+    res.json({ errorCode: amount % 10000 });
+  } else {
     res.json({
-        amount,
-        currency,
-        methodId,
-        order,
-        challengeUrl: "https://api.paycomet.com/gateway/emv3ds_challenge.php?trackId=294997301&commData=ZFNoU2RtdytPRkk5UEVwcVl5UXpKamQyWUVaRldqeHJiVHBRYkVsUVpTTTlKRkZwTldaMFlFTjJNaVZoYmtCeE0zUmpkREZFTWpBM2VHWlFlVHRH&lang=es",
-        idUser,
-        tokenUser,
-        cardCountry: "ESP",
-        errorCode: 0
+      amount,
+      currency,
+      methodId,
+      order,
+      challengeUrl: faker.internet.url(),
+      //authCode: faker.random.alphaNumeric(10),
+      idUser,
+      tokenUser,
+      cardCountry: "ESP",
+      errorCode: 0,
     });
+  }
+});
+// CARDS INFO
+app.post("/cards/info", (req, res) => {
+  const {
+    payment: { terminal, idUser, tokenUser },
+  } = req.body;
+
+  const cardBrandsArray = ["VISA", "MASTERCARD"];
+  const cardTypesArray = ["DEBIT", "CREDIT"];
+  const cardCategoriesArray = ["CONSUMER", "BUSINESS"];
+  const cardICountryISO3Array = ["CYM", "ESP"];
+
+  res.json({
+    errorCode: 0,
+    pan: `${faker.datatype.number({
+      min: 100000,
+      max: 999999,
+    })}-XX-XXXX-${faker.datatype.number({ min: 1000, max: 9999 })}`,
+    cardBrand:
+      cardBrandsArray[Math.floor(Math.random() * cardBrandsArray.length)],
+    cardType: cardTypesArray[Math.floor(Math.random() * cardTypesArray.length)],
+    cardICountryISO3:
+      cardICountryISO3Array[
+        Math.floor(Math.random() * cardICountryISO3Array.length)
+      ],
+    expiryDate: `${faker.date.future().getFullYear()}-${(
+      faker.date.future().getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}`,
+    cardHash: faker.random.alphaNumeric(32),
+    cardCategory:
+      cardCategoriesArray[
+        Math.floor(Math.random() * cardCategoriesArray.length)
+      ],
+    sepaCard: 0,
+    eeaCard: "N",
+    tokenCOF: 0,
+    psd2Card: "NA",
+  });
 });
 
+//Preauthorizations
 
+app.post("/payments/preauth", (req, res) => {
+  const {
+    payment: {
+      amount,
+      currency,
+      methodId,
+      order,
+      originalIp,
+      secure,
+      terminal,
+      idUser,
+      tokenUser,
+    },
+  } = req.body;
 
-
-app.get("/api/hello", (req, res) => {
+  if (amount > 10000) {
+    res.json({ errorCode: amount % 10000 });
+  } else {
     res.json({
-        message: "Hello from the mock server!"
+      amount,
+      currency,
+      methodId,
+      order,
+      challengeUrl: faker.internet.url(),
+      //authCode: faker.random.alphaNumeric(10),
+      idUser,
+      tokenUser,
+      cardCountry: "ESP",
+      errorCode: 0,
     });
+  }
 });
 
+app.post("/payments/:preauthorizationId/preauth/cancel", (req, res) => {
+  const {
+    payment: { authCode, amount, currency, cardCountry, originalIp, terminal },
+  } = req.body;
 
+  const { preauthorizationId } = req.params;
 
+  if (amount > 10000) {
+    res.json({ errorCode: amount % 10000 });
+  } else {
+    res.json({
+      amount,
+      currency,
+      order: preauthorizationId,
+      authCode,
+      cardCountry,
+      errorCode: 0,
+    });
+  }
+});
+
+app.post("/payments/:preauthorizationId/preauth/confirm", (req, res) => {
+  const {
+    payment: { authCode, amount, currency, originalIp, terminal, cardCountry },
+  } = req.body;
+
+  const { preauthorizationId } = req.params;
+
+  if (amount > 10000) {
+    res.json({ errorCode: amount % 10000 });
+  } else {
+    res.json({
+      amount,
+      currency,
+      order: preauthorizationId,
+      authCode,
+      cardCountry,
+      errorCode: 0,
+    });
+  }
+});
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app; // For Vercel deployment
