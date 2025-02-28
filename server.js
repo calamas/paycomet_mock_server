@@ -52,9 +52,7 @@ app.post("/payments", (req, res) => {
 });
 // CARDS INFO
 app.post("/cards/info", (req, res) => {
-  const {
-    payment: { terminal, idUser, tokenUser },
-  } = req.body;
+  const { terminal, idUser, tokenUser } = req.body;
 
   const cardBrandsArray = ["VISA", "MASTERCARD"];
   const cardTypesArray = ["DEBIT", "CREDIT"];
