@@ -59,6 +59,9 @@ app.post("/cards/info", (req, res) => {
   const cardCategoriesArray = ["CONSUMER", "BUSINESS"];
   const cardICountryISO3Array = ["CYM", "ESP"];
 
+  const cardType =
+    cardTypesArray[Math.floor(Math.random() * cardTypesArray.length)];
+
   res.json({
     errorCode: 0,
     pan: `${faker.datatype.number({
@@ -67,7 +70,8 @@ app.post("/cards/info", (req, res) => {
     })}-XX-XXXX-${faker.datatype.number({ min: 1000, max: 9999 })}`,
     cardBrand:
       cardBrandsArray[Math.floor(Math.random() * cardBrandsArray.length)],
-    cardType: cardTypesArray[Math.floor(Math.random() * cardTypesArray.length)],
+    cardType,
+    CardType: cardType,
     cardICountryISO3:
       cardICountryISO3Array[
         Math.floor(Math.random() * cardICountryISO3Array.length)
