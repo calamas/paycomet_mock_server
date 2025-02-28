@@ -31,6 +31,8 @@ app.post("/payments", (req, res) => {
     },
   } = req.body;
 
+  const returnAuthCode = amount == 2050;
+
   if (amount > 10000) {
     res.json({ errorCode: amount % 10000 });
   } else {
@@ -39,8 +41,8 @@ app.post("/payments", (req, res) => {
       currency,
       methodId,
       order,
-      challengeUrl: faker.internet.url(),
-      //authCode: faker.random.alphaNumeric(10),
+      challengeUrl: !returnAuthCode ? faker.internet.url() : undefined,
+      authCode: returnAuthCode ? faker.random.alphaNumeric(10) : undefined,
       idUser,
       tokenUser,
       cardCountry: "ESP",
