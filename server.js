@@ -31,7 +31,7 @@ app.post("/payments", (req, res) => {
     },
   } = req.body;
 
-  const returnAuthCode = false; //amount == 0;
+  const returnAuthCode = amount == 0;
 
   if (amount > 10000) {
     res.json({ errorCode: amount % 10000 });
