@@ -170,6 +170,27 @@ app.post("/payments/:preauthorizationId/preauth/confirm", (req, res) => {
   }
 });
 
+app.post("/payments/:transactionId/refund", (req, res) => {
+  const {
+    payment: { authCode, amount, currency, originalIp, terminal, cardCountry },
+  } = req.body;
+
+  const { transactionId } = req.params;
+
+  if (amount > 10000) {
+    res.json({ errorCode: amount % 10000 });
+  } else {
+    res.json({
+      amount,
+      currency,
+      order: transactionId,
+      authCode,
+      cardCountry,
+      errorCode: 0,
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
